@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "548469472701",
+    "firebase_url": "https://hariplay-cc2dd.firebaseio.com",
+    "project_id": "hariplay-cc2dd",
+    "storage_bucket": "hariplay-cc2dd.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:548469472701:android:af1822eadbbfc2a5",
+        "android_client_info": {
+          "package_name": "zw.co.hariplay.hariplay"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "548469472701-r85m9ij5vf6aht0gue87o7pvcm4gp1gq.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "zw.co.hariplay.hariplay",
+            "certificate_hash": "4c75b13ecd97bd1114c344c71e91dc4b68d9db95"
+          }
+        },
+        {
+          "client_id": "548469472701-2tpj54pnaovg03h7mhiaj7o4bo0ff6o6.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDBODHiuxZWwdh4KzCkUZmnFy0wlzdEhxY"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "548469472701-2tpj54pnaovg03h7mhiaj7o4bo0ff6o6.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

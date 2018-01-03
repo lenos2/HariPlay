@@ -1,0 +1,72 @@
+apply plugin: 'com.android.application'
+
+android {
+    compileSdkVersion 26
+    defaultConfig {
+        applicationId "zw.co.hariplay.hariplay"
+        minSdkVersion 16
+        targetSdkVersion 26
+        versionCode 1
+        versionName "1.0"
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+}
+
+
+
+dependencies {
+    compile fileTree(dir: 'libs', include: ['*.jar'])
+    compile 'com.android.support:appcompat-v7:26.1.0'
+    compile 'com.google.firebase:firebase-auth:11.8.0'
+    compile 'com.android.support:support-v4:26.1.0'
+    testCompile 'junit:junit:4.12'
+    androidTestCompile 'com.android.support.test:runner:1.0.1'
+    androidTestCompile 'com.android.support.test.espresso:espresso-core:3.0.1'
+
+    compile 'com.android.support.constraint:constraint-layout:1.0.2'
+    testCompile 'junit:junit:4.12'
+
+    //Media Player Extended
+    compile 'net.protyposis.android.mediaplayer:mediaplayer:4.3.2'
+    compile 'net.protyposis.android.mediaplayer:mediaplayer-dash:4.3.2'
+
+    //Design library for Coordinator Layout and Toolbars
+    compile 'com.android.support:design:26.1.0'
+
+    //BottomNavigationViewEx library
+    compile 'com.github.ittianyu:BottomNavigationViewEx:1.1.9'
+
+    //Circle ImageView
+    compile 'de.hdodenhof:circleimageview:2.1.0'
+
+    //Universal image loader
+    compile 'com.nostra13.universalimageloader:universal-image-loader:1.9.5'
+
+    //firebase authentication
+    compile 'com.google.firebase:firebase-auth:11.8.0'
+
+    //firebase database
+    compile 'com.google.firebase:firebase-database:11.8.0'
+
+    //firebase storage
+    compile 'com.google.firebase:firebase-storage:11.8.0'
+
+    //Phone Number Input
+    compile 'net.rimoto:intlphoneinput:1.0.1'
+
+    //Google Nearby Library
+    compile 'com.google.android.gms:play-services-nearby:11.8.0'
+
+    //HashTag Helper
+    compile 'com.github.danylovolokh:hashtag-helper:1.1.0'
+
+}
+
+//Firebase
+apply plugin: 'com.google.gms.google-services'
