@@ -28,16 +28,15 @@
 
 
                 <TextView
+                    android:id="@+id/username"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:textSize="20sp"
-                    android:text="mitch.tabian"
-                    android:layout_toRightOf="@+id/profile_photo"
-                    android:layout_marginLeft="10dp"
                     android:layout_centerVertical="true"
-                    android:id="@+id/username"
+                    android:layout_marginLeft="10dp"
+                    android:layout_toRightOf="@+id/profile_photo"
+                    android:minWidth="60dp"
                     android:textColor="@color/black"
-                    />
+                    android:textSize="20sp" />
 
 
                 <ImageView
@@ -51,18 +50,29 @@
 
             </RelativeLayout>
 
-            <zw.co.hariplay.hariplay.Utils.SquareImageView
+        <RelativeLayout
+            android:id="@+id/relLayout5"
+            android:layout_width="match_parent"
+            android:layout_height="250dp"
+            android:layout_below="@id/relLayout1"
+            android:background="@color/black"
+            >
+            <com.google.android.exoplayer2.ui.SimpleExoPlayerView
+                android:id="@+id/post_video"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:id="@+id/post_image"
-                android:layout_below="@id/relLayout1"
-                android:scaleType="centerCrop"/>
+                android:layout_height="match_parent"
+                android:minHeight="100dp">
+
+            </com.google.android.exoplayer2.ui.SimpleExoPlayerView>
+        </RelativeLayout>
+
+
 
             <RelativeLayout
                 android:layout_width="match_parent"
                 android:layout_height="50dp"
                 android:id="@+id/relLayout2"
-                android:layout_below="@+id/post_image"
+                android:layout_below="@+id/relLayout5"
                 android:background="@color/white">
 
                 <RelativeLayout
@@ -113,38 +123,37 @@
                 android:background="@color/white">
 
                 <TextView
+                    android:id="@+id/image_likes"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Liked by Mitch, Tom, Mohammed and 30 others"
+                    android:hint="Liked by..."
                     android:textColor="@color/black"
-                    android:textSize="18sp"
-                    android:id="@+id/image_likes"/>
+                    android:textSize="18sp" />
 
                 <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="mitch.tabian moutains #earthporn #mountains"
-                    android:textColor="@color/black"
-                    android:textSize="18sp"
                     android:id="@+id/image_caption"
-                    android:layout_below="@+id/image_likes"
-                    android:layout_marginTop="15dp"/>
-
-                <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="View all 3 comments"
-                    android:textColor="@color/grey"
-                    android:textSize="18sp"
-                    android:layout_below="@+id/image_caption"
+                    android:layout_below="@+id/image_likes"
+                    android:layout_marginTop="15dp"
+                    android:hint="Caption"
+                    android:textColor="@color/black"
+                    android:textSize="18sp" />
+
+                <TextView
                     android:id="@+id/image_comments_link"
-                    android:layout_marginTop="15dp"/>
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@+id/image_caption"
+                    android:layout_marginTop="15dp"
+                    android:textColor="@color/darkGrey"
+                    android:textSize="18sp" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="3 DAYS AGO"
-                    android:textColor="@color/grey"
+                    android:textColor="@color/darkGrey"
                     android:textSize="18sp"
                     android:layout_below="@+id/image_comments_link"
                     android:id="@+id/image_time_posted"

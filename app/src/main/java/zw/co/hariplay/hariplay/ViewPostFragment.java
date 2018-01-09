@@ -1,12 +1,9 @@
 package zw.co.hariplay.hariplay;
 
 
-import android.media.Image;
 import android.os.Bundle;
-import android.os.Parcelable;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.design.widget.BottomNavigationView;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -14,8 +11,6 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
-import android.widget.CalendarView;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -32,7 +27,6 @@ import com.ittianyu.bottomnavigationviewex.BottomNavigationViewEx;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
@@ -40,11 +34,9 @@ import java.util.TimeZone;
 
 import zw.co.hariplay.hariplay.Utils.BottomNavigationViewHelper;
 import zw.co.hariplay.hariplay.Utils.FirebaseMethods;
-import zw.co.hariplay.hariplay.Utils.GridImageAdapter;
 import zw.co.hariplay.hariplay.Utils.SquareImageView;
 import zw.co.hariplay.hariplay.Utils.UniversalImageLoader;
 import zw.co.hariplay.hariplay.models.Photo;
-import zw.co.hariplay.hariplay.models.User;
 import zw.co.hariplay.hariplay.models.UserAccountSettings;
 
 /**
@@ -86,7 +78,7 @@ public class ViewPostFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_view_post, container, false);
-        mPostImage = (SquareImageView) view.findViewById(R.id.post_image);
+        mPostImage = (SquareImageView) view.findViewById(R.id.post_video);
         bottomNavigationView = (BottomNavigationViewEx) view.findViewById(R.id.bottomNavViewBar);
         mBackArrow = (ImageView) view.findViewById(R.id.backArrow);
         mBackLabel = (TextView) view.findViewById(R.id.tvBackLabel);

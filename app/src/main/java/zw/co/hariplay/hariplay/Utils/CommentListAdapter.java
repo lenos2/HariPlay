@@ -99,7 +99,7 @@ public class CommentListAdapter extends ArrayAdapter<Comment> {
             holder.timestamp.setText("today");
         }
 
-        //set the username and profile image
+        //set the username and profile video
         DatabaseReference reference = FirebaseDatabase.getInstance().getReference();
         Query query = reference
                 .child(mContext.getString(R.string.dbname_user_account_settings))

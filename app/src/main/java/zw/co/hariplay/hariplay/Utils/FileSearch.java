@@ -1,7 +1,5 @@
 package zw.co.hariplay.hariplay.Utils;
 
-import android.app.ProgressDialog;
-
 import java.io.File;
 import java.util.ArrayList;
 
@@ -43,5 +41,55 @@ public class FileSearch {
             }
         }
         return pathArray;
+    }
+
+    public static ArrayList<String> getImagePaths(String directory){
+        ArrayList<String> pathArray = new ArrayList<>();
+        File file = new File(directory);
+        File[] listfiles = file.listFiles();
+        for(int i = 0; i < listfiles.length; i++){
+            if(listfiles[i].isFile() && accept(listfiles[i])){
+
+                pathArray.add(listfiles[i].getAbsolutePath());
+            }
+        }
+        return pathArray;
+    }
+
+    private static final String[] okFileVideoExtensions =  new String[] {"mp4", "m4a","webm"};
+    private static boolean acceptedVideo(File file)
+    {
+        for (String extension : okFileVideoExtensions)
+        {
+            if (file.getName().toLowerCase().endsWith(extension))
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+    public static ArrayList<String> getVideoPaths(String directory){
+        ArrayList<String> pathArray = new ArrayList<>();
+        File file = new File(directory);
+        File[] listfiles = file.listFiles();
+        for(int i = 0; i < listfiles.length; i++){
+            if(listfiles[i].isFile() && acceptedVideo(listfiles[i])){
+                pathArray.add(listfiles[i].getAbsolutePath());
+            }
+        }
+        return pathArray;
+    }
+
+    private static final String[] okFileImageExtensions =  new String[] {"jpg", "png", "gif","jpeg"};
+    private static boolean accept(File file)
+    {
+        for (String extension : okFileImageExtensions)
+        {
+            if (file.getName().toLowerCase().endsWith(extension))
+            {
+                return true;
+            }
+        }
+        return false;
     }
 }

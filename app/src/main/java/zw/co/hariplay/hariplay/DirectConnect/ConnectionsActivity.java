@@ -184,12 +184,12 @@ public abstract class ConnectionsActivity extends AppCompatActivity
    */
   @Override
   protected void onStart() {
-    if (hasPermissions(this, getRequiredPermissions())) {
+    /*if (hasPermissions(this, getRequiredPermissions())) {
       createGoogleApiClient();
       mGoogleApiClient.connect();
     } else {
       ActivityCompat.requestPermissions(this,getRequiredPermissions(), REQUEST_CODE_REQUIRED_PERMISSIONS);
-    }
+    }*/
     super.onStart();
   }
 

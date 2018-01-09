@@ -56,7 +56,7 @@
             <zw.co.hariplay.hariplay.Utils.SquareImageView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:id="@+id/post_image"
+                android:id="@+id/post_video"
                 android:layout_below="@id/relLayout1"
                 android:scaleType="centerCrop"/>
 
@@ -64,7 +64,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="50dp"
                 android:id="@+id/relLayout2"
-                android:layout_below="@+id/post_image"
+                android:layout_below="@+id/post_video"
                 android:background="@color/white">
 
                 <RelativeLayout

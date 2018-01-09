@@ -1,5 +1,6 @@
 package zw.co.hariplay.hariplay.Share;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
@@ -12,6 +13,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.Toast;
 
 import com.ittianyu.bottomnavigationviewex.BottomNavigationViewEx;
 
@@ -33,6 +35,8 @@ public class ShareActivity extends AppCompatActivity{
 
     private ViewPager mViewPager;
 
+    private VideoFragment vFrag = new VideoFragment();
+
 
     private Context mContext = ShareActivity.this;
 
@@ -53,10 +57,13 @@ public class ShareActivity extends AppCompatActivity{
     /**
      * return the current tab number
      * 0 = GalleryFragment
-     * 1 = PhotoFragment
+     * 1 = VideoFragment
      * @return
      */
     public int getCurrentTabNumber(){
+        if (mViewPager.getCurrentItem() == 1){
+            vFrag.startRec();
+        }
         return mViewPager.getCurrentItem();
     }
 
@@ -65,8 +72,9 @@ public class ShareActivity extends AppCompatActivity{
      */
     private void setupViewPager(){
         SectionsPagerAdapter adapter =  new SectionsPagerAdapter(getSupportFragmentManager());
-        adapter.addFragment(new GalleryFragment());
-        adapter.addFragment(new PhotoFragment());
+        adapter.addFragment(new GalleryFragment2());
+        adapter.addFragment(vFrag);
+        //adapter.addFragment(new GalleryFragment2());
 
         mViewPager = (ViewPager) findViewById(R.id.viewpager_container);
         mViewPager.setAdapter(adapter);
@@ -74,11 +82,32 @@ public class ShareActivity extends AppCompatActivity{
         TabLayout tabLayout = (TabLayout) findViewById(R.id.tabsBottom);
         tabLayout.setupWithViewPager(mViewPager);
 
+        tabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
+            @Override
+            public void onTabSelected(TabLayout.Tab tab) {
+                //Toast.makeText(ShareActivity.this,"Current item : "+ tab.getPosition(),Toast.LENGTH_SHORT).show();
+                if (tab.getPosition() == 1)
+                    vFrag.startRec();
+            }
+
+            @Override
+            public void onTabUnselected(TabLayout.Tab tab) {
+
+            }
+
+            @Override
+            public void onTabReselected(TabLayout.Tab tab) {
+
+            }
+        });
+
         tabLayout.getTabAt(0).setText(getString(R.string.gallery));
-        tabLayout.getTabAt(1).setText(getString(R.string.photo));
+        tabLayout.getTabAt(1).setText(getString(R.string.video));
+        //tabLayout.getTabAt(2).setText("GALLERY 2");
 
     }
 
+    @SuppressLint("WrongConstant")
     public int getTask(){
         Log.d(TAG, "getTask: TASK: " + getIntent().getFlags());
         return getIntent().getFlags();

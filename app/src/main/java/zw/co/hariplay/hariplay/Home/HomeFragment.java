@@ -26,10 +26,12 @@ import java.util.Map;
 
 import zw.co.hariplay.hariplay.R;
 import zw.co.hariplay.hariplay.Utils.MainfeedListAdapter;
+import zw.co.hariplay.hariplay.Utils.MainfeedListAdapter2;
 import zw.co.hariplay.hariplay.models.Comment;
 import zw.co.hariplay.hariplay.models.Like;
 import zw.co.hariplay.hariplay.models.Photo;
 import zw.co.hariplay.hariplay.models.UserAccountSettings;
+import zw.co.hariplay.hariplay.models.Video;
 
 /**
  * Created by User on 5/28/2017.
@@ -40,10 +42,13 @@ public class HomeFragment extends Fragment {
 
     //vars
     private ArrayList<Photo> mPhotos;
+    private ArrayList<Video> mVideos;
     private ArrayList<Photo> mPaginatedPhotos;
+    private ArrayList<Video> mPaginatedVideos;
     private ArrayList<String> mFollowing;
     private ListView mListView;
     private MainfeedListAdapter mAdapter;
+    private MainfeedListAdapter2 mAdapter2;
     private int mResults;
 
 
@@ -54,6 +59,7 @@ public class HomeFragment extends Fragment {
         mListView = (ListView) view.findViewById(R.id.listView);
         mFollowing = new ArrayList<>();
         mPhotos = new ArrayList<>();
+        mVideos = new ArrayList<>();
 
         getFollowing();
 
@@ -78,7 +84,8 @@ public class HomeFragment extends Fragment {
                 }
                 mFollowing.add(FirebaseAuth.getInstance().getCurrentUser().getUid());
                 //get the photos
-                getPhotos();
+                //getPhotos();
+                getVideos();
             }
 
             @Override
@@ -86,6 +93,122 @@ public class HomeFragment extends Fragment {
 
             }
         });
+    }
+
+    private void getVideos(){
+        Log.d(TAG, "getVideos: getting videos");
+        DatabaseReference reference = FirebaseDatabase.getInstance().getReference();
+        for(int i = 0; i < mFollowing.size(); i++){
+            final int count = i;
+            Query query = reference
+                    .child(getString(R.string.dbname_user_videos))
+                    .child(mFollowing.get(i))
+                    .orderByChild(getString(R.string.field_user_id))
+                    .equalTo(mFollowing.get(i));
+            query.addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    for(DataSnapshot singleSnapshot : dataSnapshot.getChildren()){
+
+                        Video video = new Video();
+                        Map<String, Object> objectMap = (HashMap<String, Object>) singleSnapshot.getValue();
+
+                        video.setCaption(objectMap.get(getString(R.string.field_caption)).toString());
+                        video.setTags(objectMap.get(getString(R.string.field_tags)).toString());
+                        video.setVideo_id(objectMap.get(getString(R.string.field_video_id)).toString());
+                        video.setUser_id(objectMap.get(getString(R.string.field_user_id)).toString());
+                        video.setDate_created(objectMap.get(getString(R.string.field_date_created)).toString());
+                        video.setVideo_path(objectMap.get(getString(R.string.field_video_path)).toString());
+
+                        ArrayList<Comment> comments = new ArrayList<Comment>();
+                        for (DataSnapshot dSnapshot : singleSnapshot
+                                .child(getString(R.string.field_comments)).getChildren()){
+                            Comment comment = new Comment();
+                            comment.setUser_id(dSnapshot.getValue(Comment.class).getUser_id());
+                            comment.setComment(dSnapshot.getValue(Comment.class).getComment());
+                            comment.setDate_created(dSnapshot.getValue(Comment.class).getDate_created());
+                            comments.add(comment);
+                        }
+
+                        video.setComments(comments);
+                        mVideos.add(video);
+                    }
+                    if(count >= mFollowing.size() -1){
+                        //display our photos
+                        //displayPhotos();
+                        displayVideos();
+                    }
+                }
+
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
+
+                }
+            });
+        }
+    }
+
+    private void displayVideos(){
+        mPaginatedVideos = new ArrayList<>();
+        if(mVideos != null){
+            try{
+                Collections.sort(mVideos, new Comparator<Video>() {
+                    @Override
+                    public int compare(Video o1, Video o2) {
+                        return o2.getDate_created().compareTo(o1.getDate_created());
+                    }
+                });
+
+                int iterations = mVideos.size();
+
+                if(iterations > 10){
+                    iterations = 10;
+                }
+
+                mResults = 10;
+                for(int i = 0; i < iterations; i++){
+                    mPaginatedVideos.add(mVideos.get(i));
+                }
+
+                mAdapter2 = new MainfeedListAdapter2(getActivity(), R.layout.layout_mainfeed_listitem, mPaginatedVideos);
+                mListView.setAdapter(mAdapter2);
+
+            }catch (NullPointerException e){
+                Log.e(TAG, "displayPhotos: NullPointerException: " + e.getMessage() );
+            }catch (IndexOutOfBoundsException e){
+                Log.e(TAG, "displayPhotos: IndexOutOfBoundsException: " + e.getMessage() );
+            }
+        }
+    }
+
+    public void displayMoreVideos(){
+        Log.d(TAG, "displayMoreVideos: displaying more videos");
+
+        try{
+
+            if(mVideos.size() > mResults && mVideos.size() > 0){
+
+                int iterations;
+                if(mVideos.size() > (mResults + 10)){
+                    Log.d(TAG, "displayMoreVideos: there are greater than 10 more videos");
+                    iterations = 10;
+                }else{
+                    Log.d(TAG, "displayMoreVideos: there is less than 10 more videos");
+                    iterations = mVideos.size() - mResults;
+                }
+
+                //add the new photos to the paginated results
+                for(int i = mResults; i < mResults + iterations; i++){
+                    mPaginatedVideos.add(mVideos.get(i));
+                }
+                mResults = mResults + iterations;
+                mAdapter.notifyDataSetChanged();
+            }
+        }catch (NullPointerException e){
+            Log.e(TAG, "displayVideos: NullPointerException: " + e.getMessage() );
+        }catch (IndexOutOfBoundsException e){
+            Log.e(TAG, "displayVideos: IndexOutOfBoundsException: " + e.getMessage() );
+        }
     }
 
     private void getPhotos(){
@@ -139,6 +262,7 @@ public class HomeFragment extends Fragment {
             });
         }
     }
+
 
     private void displayPhotos(){
         mPaginatedPhotos = new ArrayList<>();

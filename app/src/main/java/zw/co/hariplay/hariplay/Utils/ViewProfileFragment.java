@@ -46,6 +46,7 @@ import zw.co.hariplay.hariplay.models.Photo;
 import zw.co.hariplay.hariplay.models.User;
 import zw.co.hariplay.hariplay.models.UserAccountSettings;
 import zw.co.hariplay.hariplay.models.UserSettings;
+import zw.co.hariplay.hariplay.models.Video;
 
 /**
  * Created by User on 6/29/2017.
@@ -57,7 +58,7 @@ public class ViewProfileFragment extends Fragment {
 
 
     public interface OnGridImageSelectedListener{
-        void onGridImageSelected(Photo photo, int activityNumber);
+        void onGridImageSelected(Video video, int activityNumber);
     }
     OnGridImageSelectedListener mOnGridImageSelectedListener;
 
@@ -225,24 +226,24 @@ public class ViewProfileFragment extends Fragment {
 
         DatabaseReference reference2 = FirebaseDatabase.getInstance().getReference();
         Query query2 = reference2
-                .child(getString(R.string.dbname_user_photos))
+                .child(getString(R.string.dbname_user_videos))
                 .child(mUser.getUser_id());
         query2.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
 
-                ArrayList<Photo> photos = new ArrayList<Photo>();
+                ArrayList<Video> videos = new ArrayList<>();
                 for ( DataSnapshot singleSnapshot :  dataSnapshot.getChildren()){
 
-                    Photo photo = new Photo();
+                    Video video = new Video();
                     Map<String, Object> objectMap = (HashMap<String, Object>) singleSnapshot.getValue();
 
-                    photo.setCaption(objectMap.get(getString(R.string.field_caption)).toString());
-                    photo.setTags(objectMap.get(getString(R.string.field_tags)).toString());
-                    photo.setPhoto_id(objectMap.get(getString(R.string.field_photo_id)).toString());
-                    photo.setUser_id(objectMap.get(getString(R.string.field_user_id)).toString());
-                    photo.setDate_created(objectMap.get(getString(R.string.field_date_created)).toString());
-                    photo.setImage_path(objectMap.get(getString(R.string.field_image_path)).toString());
+                    video.setCaption(objectMap.get(getString(R.string.field_caption)).toString());
+                    video.setTags(objectMap.get(getString(R.string.field_tags)).toString());
+                    video.setVideo_id(objectMap.get(getString(R.string.field_video_id)).toString());
+                    video.setUser_id(objectMap.get(getString(R.string.field_user_id)).toString());
+                    video.setDate_created(objectMap.get(getString(R.string.field_date_created)).toString());
+                    video.setVideo_path(objectMap.get(getString(R.string.field_video_path)).toString());
 
                     ArrayList<Comment> comments = new ArrayList<Comment>();
                     for (DataSnapshot dSnapshot : singleSnapshot
@@ -254,7 +255,7 @@ public class ViewProfileFragment extends Fragment {
                         comments.add(comment);
                     }
 
-                    photo.setComments(comments);
+                    video.setComments(comments);
 
                     List<Like> likesList = new ArrayList<Like>();
                     for (DataSnapshot dSnapshot : singleSnapshot
@@ -263,10 +264,10 @@ public class ViewProfileFragment extends Fragment {
                         like.setUser_id(dSnapshot.getValue(Like.class).getUser_id());
                         likesList.add(like);
                     }
-                    photo.setLikes(likesList);
-                    photos.add(photo);
+                    video.setLikes(likesList);
+                    videos.add(video);
                 }
-                setupImageGrid(photos);
+                setupImageGrid(videos);
             }
 
             @Override
@@ -391,24 +392,24 @@ public class ViewProfileFragment extends Fragment {
         editProfile.setVisibility(View.VISIBLE);
     }
 
-    private void setupImageGrid(final ArrayList<Photo> photos){
-        //setup our image grid
+    private void setupImageGrid(final ArrayList<Video> videos){
+        //setup our video grid
         int gridWidth = getResources().getDisplayMetrics().widthPixels;
         int imageWidth = gridWidth/NUM_GRID_COLUMNS;
         gridView.setColumnWidth(imageWidth);
 
-        ArrayList<String> imgUrls = new ArrayList<String>();
-        for(int i = 0; i < photos.size(); i++){
-            imgUrls.add(photos.get(i).getImage_path());
+        ArrayList<String> vidzUrls = new ArrayList<String>();
+        for(int i = 0; i < videos.size(); i++){
+            vidzUrls.add(videos.get(i).getVideo_path());
         }
-        GridImageAdapter adapter = new GridImageAdapter(getActivity(),R.layout.layout_grid_imageview,
-                "", imgUrls);
+        GridVideoAdapter adapter = new GridVideoAdapter(getActivity(),R.layout.layout_grid_videoview,
+                "", vidzUrls);
         gridView.setAdapter(adapter);
 
         gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                mOnGridImageSelectedListener.onGridImageSelected(photos.get(position), ACTIVITY_NUM);
+                mOnGridImageSelectedListener.onGridImageSelected(videos.get(position), ACTIVITY_NUM);
             }
         });
     }

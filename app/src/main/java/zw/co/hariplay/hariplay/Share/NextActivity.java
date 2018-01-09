@@ -2,6 +2,7 @@ package zw.co.hariplay.hariplay.Share;
 
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -10,22 +11,32 @@ import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.MediaController;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.VideoView;
 
+import com.google.android.exoplayer2.DefaultLoadControl;
+import com.google.android.exoplayer2.DefaultRenderersFactory;
+import com.google.android.exoplayer2.ExoPlayerFactory;
+import com.google.android.exoplayer2.SimpleExoPlayer;
+import com.google.android.exoplayer2.extractor.DefaultExtractorsFactory;
+import com.google.android.exoplayer2.source.ExtractorMediaSource;
+import com.google.android.exoplayer2.source.MediaSource;
+import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
+import com.google.android.exoplayer2.ui.SimpleExoPlayerView;
+import com.google.android.exoplayer2.upstream.DefaultHttpDataSourceFactory;
+import com.google.android.exoplayer2.util.Util;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 
 import zw.co.hariplay.hariplay.R;
 import zw.co.hariplay.hariplay.Utils.FirebaseMethods;
-import zw.co.hariplay.hariplay.Utils.UniversalImageLoader;
-import zw.co.hariplay.hariplay.models.User;
 
 /**
  * Created by User on 7/24/2017.
@@ -44,13 +55,19 @@ public class NextActivity extends AppCompatActivity {
 
     //widgets
     private EditText mCaption;
+    SimpleExoPlayer player;
+    SimpleExoPlayerView playerView;
 
     //vars
     private String mAppend = "file:/";
     private int imageCount = 0;
-    private String imgUrl;
+    private int videoCount = 0;
+    private String videoUrl;
     private Bitmap bitmap;
     private Intent intent;
+    private Boolean playWhenReady;
+    private int currentWindow;
+    private long playbackPosition;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -80,9 +97,9 @@ public class NextActivity extends AppCompatActivity {
                 Toast.makeText(NextActivity.this, "Attempting to upload new photo", Toast.LENGTH_SHORT).show();
                 String caption = mCaption.getText().toString();
 
-                if(intent.hasExtra(getString(R.string.selected_image))){
-                    imgUrl = intent.getStringExtra(getString(R.string.selected_image));
-                    mFirebaseMethods.uploadNewPhoto(getString(R.string.new_photo), caption, imageCount, imgUrl,null);
+                if(intent.hasExtra(getString(R.string.selected_video))){
+                    videoUrl = intent.getStringExtra(getString(R.string.selected_video));
+                    mFirebaseMethods.uploadNewVideo(caption, videoCount, videoUrl,null);
                 }
                 else if(intent.hasExtra(getString(R.string.selected_bitmap))){
                     bitmap = (Bitmap) intent.getParcelableExtra(getString(R.string.selected_bitmap));
@@ -94,7 +111,7 @@ public class NextActivity extends AppCompatActivity {
             }
         });
 
-        setImage();
+        setImageOrVideo();
     }
 
     private void someMethod(){
@@ -121,22 +138,60 @@ public class NextActivity extends AppCompatActivity {
     /**
      * gets the image url from the incoming intent and displays the chosen image
      */
-    private void setImage(){
+    private void setImageOrVideo(){
         intent = getIntent();
-        ImageView image = (ImageView) findViewById(R.id.imageShare);
+        //ImageView image = (ImageView) findViewById(R.id.videoShare);
+        //SimpleExoPlayerView playerView = (SimpleExoPlayerView) findViewById(R.id.videoShare);
+        VideoView videoView = (VideoView)findViewById(R.id.videoShare);
+        if(intent.hasExtra(getString(R.string.selected_video))){
+            videoUrl = intent.getStringExtra(getString(R.string.selected_video));
+            Log.d(TAG, "setVideo: got new video url: " + videoUrl);
+            //UniversalImageLoader.setImageOrVideo(videoUrl, image, null, mAppend);
 
-        if(intent.hasExtra(getString(R.string.selected_image))){
-            imgUrl = intent.getStringExtra(getString(R.string.selected_image));
-            Log.d(TAG, "setImage: got new image url: " + imgUrl);
-            UniversalImageLoader.setImage(imgUrl, image, null, mAppend);
+            videoView.setVideoPath(videoUrl);
+            videoView.start();
+            //Adding Media Controls
+            MediaController vidControl = new MediaController(this);
+            vidControl.setAnchorView(videoView);
+            videoView.setMediaController(vidControl);
+            //initializePlayer();
         }
         else if(intent.hasExtra(getString(R.string.selected_bitmap))){
             bitmap = (Bitmap) intent.getParcelableExtra(getString(R.string.selected_bitmap));
-            Log.d(TAG, "setImage: got new bitmap");
-            image.setImageBitmap(bitmap);
+            Log.d(TAG, "setImageOrVideo: got new bitmap");
+            //image.setImageBitmap(bitmap);
         }
     }
 
+    private void initializePlayer() {
+        player = ExoPlayerFactory.newSimpleInstance(
+                new DefaultRenderersFactory(this),
+                new DefaultTrackSelector(), new DefaultLoadControl());
+
+        playerView.setPlayer(player);
+
+        player.setPlayWhenReady(playWhenReady);
+        player.seekTo(currentWindow, playbackPosition);
+
+        Uri uri = Uri.parse(videoUrl);
+        MediaSource mediaSource = buildMediaSource(uri);
+        player.prepare(mediaSource, true, false);
+    }
+    private MediaSource buildMediaSource(Uri uri) {
+        return new ExtractorMediaSource(uri,
+                new DefaultHttpDataSourceFactory("ua"),
+                new DefaultExtractorsFactory(), null, null);
+    }
+
+    private void releasePlayer() {
+        if (player != null) {
+            playbackPosition = player.getCurrentPosition();
+            currentWindow = player.getCurrentWindowIndex();
+            playWhenReady = player.getPlayWhenReady();
+            player.release();
+            player = null;
+        }
+    }
      /*
      ------------------------------------ Firebase ---------------------------------------------
      */
@@ -174,6 +229,7 @@ public class NextActivity extends AppCompatActivity {
             public void onDataChange(DataSnapshot dataSnapshot) {
 
                 imageCount = mFirebaseMethods.getImageCount(dataSnapshot);
+                videoCount = mFirebaseMethods.getVideoCount(dataSnapshot);
                 Log.d(TAG, "onDataChange: image count: " + imageCount);
 
             }
@@ -190,6 +246,19 @@ public class NextActivity extends AppCompatActivity {
     public void onStart() {
         super.onStart();
         mAuth.addAuthStateListener(mAuthListener);
+
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+
     }
 
     @Override
@@ -198,5 +267,6 @@ public class NextActivity extends AppCompatActivity {
         if (mAuthListener != null) {
             mAuth.removeAuthStateListener(mAuthListener);
         }
+
     }
 }
