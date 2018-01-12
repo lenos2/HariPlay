@@ -23,6 +23,9 @@ import zw.co.hariplay.hariplay.Profile.AccountSettingsActivity;
 import zw.co.hariplay.hariplay.R;
 import zw.co.hariplay.hariplay.Utils.Permissions;
 
+import static android.app.Activity.RESULT_CANCELED;
+import static android.app.Activity.RESULT_OK;
+
 /**
  * A simple {@link Fragment} subclass.
  */
@@ -34,8 +37,8 @@ public class VideoFragment extends Fragment {
     private static final int VIDEO_FRAGMENT_NUM = 1;
     private static final int GALLERY_FRAGMENT_NUM = 2;
     private static final int VIDEO_REQUEST_CODE = 5;
-    private static final int RESULT_OK = 1;
-    private static final int RESULT_CANCELED = 0;
+    //private static final int RESULT_OK = 1;
+    //private static final int RESULT_CANCELED = 0;
     View v;
 
 
@@ -121,7 +124,7 @@ public class VideoFragment extends Fragment {
                 Toast.makeText(v.getContext(), "Video recording cancelled.",
                         Toast.LENGTH_LONG).show();
             } else {
-                Toast.makeText(v.getContext(), "Failed to record video" + requestCode,
+                Toast.makeText(v.getContext(), "Failed to record video" + requestCode + data.getData(),
                         Toast.LENGTH_LONG).show();
             }
 

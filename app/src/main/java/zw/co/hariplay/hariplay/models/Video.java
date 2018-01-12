@@ -3,13 +3,15 @@ package zw.co.hariplay.hariplay.models;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import com.orm.SugarRecord;
+
 import java.util.List;
 
 /**
  * Created by User on 7/29/2017.
  */
 
-public class Video implements Parcelable {
+public class Video extends SugarRecord<Video> implements Parcelable  {
 
     private String caption;
     private String date_created;

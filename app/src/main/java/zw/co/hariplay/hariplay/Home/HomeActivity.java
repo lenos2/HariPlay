@@ -337,7 +337,7 @@ public class HomeActivity extends ConnectionsActivity implements
     public void onConnected(@Nullable Bundle bundle) {
         super.onConnected(bundle);
 
-        disconnectFromAllEndpoints();
+        //disconnectFromAllEndpoints();
         startDiscovering();
         startAdvertising();
     }

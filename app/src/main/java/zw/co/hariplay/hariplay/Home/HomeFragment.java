@@ -8,6 +8,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
@@ -28,6 +29,7 @@ import zw.co.hariplay.hariplay.R;
 import zw.co.hariplay.hariplay.Utils.MainfeedListAdapter;
 import zw.co.hariplay.hariplay.Utils.MainfeedListAdapter2;
 import zw.co.hariplay.hariplay.models.Comment;
+import zw.co.hariplay.hariplay.models.Following;
 import zw.co.hariplay.hariplay.models.Like;
 import zw.co.hariplay.hariplay.models.Photo;
 import zw.co.hariplay.hariplay.models.UserAccountSettings;
@@ -50,6 +52,8 @@ public class HomeFragment extends Fragment {
     private MainfeedListAdapter mAdapter;
     private MainfeedListAdapter2 mAdapter2;
     private int mResults;
+    private Following savingFollowing = new Following();
+    private View v;
 
 
     @Nullable
@@ -60,7 +64,7 @@ public class HomeFragment extends Fragment {
         mFollowing = new ArrayList<>();
         mPhotos = new ArrayList<>();
         mVideos = new ArrayList<>();
-
+        v=view;
         getFollowing();
 
         return view;
@@ -81,10 +85,14 @@ public class HomeFragment extends Fragment {
                     singleSnapshot.child(getString(R.string.field_user_id)).getValue());
 
                     mFollowing.add(singleSnapshot.child(getString(R.string.field_user_id)).getValue().toString());
+                    savingFollowing.setmUserID(singleSnapshot.child(getString(R.string.field_user_id)).getValue().toString());
+                    savingFollowing.save();
                 }
                 mFollowing.add(FirebaseAuth.getInstance().getCurrentUser().getUid());
                 //get the photos
                 //getPhotos();
+                String text = "The number of IDs saved is : "+Following.count(Following.class,null,null);
+                Toast.makeText(v.getContext(),text,Toast.LENGTH_SHORT).show();
                 getVideos();
             }
 

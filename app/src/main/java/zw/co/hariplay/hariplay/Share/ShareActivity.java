@@ -62,7 +62,7 @@ public class ShareActivity extends AppCompatActivity{
      */
     public int getCurrentTabNumber(){
         if (mViewPager.getCurrentItem() == 1){
-            vFrag.startRec();
+            vFrag.startRecHome();
         }
         return mViewPager.getCurrentItem();
     }
