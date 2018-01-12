@@ -2,6 +2,7 @@ package zw.co.hariplay.hariplay.Utils;
 
 import android.content.Context;
 import android.content.Intent;
+import android.net.Uri;
 import android.support.annotation.LayoutRes;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -15,6 +16,16 @@ import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.google.android.exoplayer2.DefaultLoadControl;
+import com.google.android.exoplayer2.DefaultRenderersFactory;
+import com.google.android.exoplayer2.ExoPlayerFactory;
+import com.google.android.exoplayer2.SimpleExoPlayer;
+import com.google.android.exoplayer2.extractor.DefaultExtractorsFactory;
+import com.google.android.exoplayer2.source.ExtractorMediaSource;
+import com.google.android.exoplayer2.source.MediaSource;
+import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
+import com.google.android.exoplayer2.ui.SimpleExoPlayerView;
+import com.google.android.exoplayer2.upstream.DefaultHttpDataSourceFactory;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -38,15 +49,15 @@ import zw.co.hariplay.hariplay.Profile.ProfileActivity;
 import zw.co.hariplay.hariplay.R;
 import zw.co.hariplay.hariplay.models.Comment;
 import zw.co.hariplay.hariplay.models.Like;
-import zw.co.hariplay.hariplay.models.Photo;
 import zw.co.hariplay.hariplay.models.User;
 import zw.co.hariplay.hariplay.models.UserAccountSettings;
+import zw.co.hariplay.hariplay.models.Video;
 
 /**
  * Created by User on 9/22/2017.
  */
 
-public class MainfeedListAdapter extends ArrayAdapter<Photo> {
+public class MainfeedListAdapter2 extends ArrayAdapter<Video> {
 
     public interface OnLoadMoreItemsListener{
         void onLoadMoreItems();
@@ -61,7 +72,7 @@ public class MainfeedListAdapter extends ArrayAdapter<Photo> {
     private DatabaseReference mReference;
     private String currentUsername = "";
 
-    public MainfeedListAdapter(@NonNull Context context, @LayoutRes int resource, @NonNull List<Photo> objects) {
+    public MainfeedListAdapter2(@NonNull Context context, @LayoutRes int resource, @NonNull List<Video> objects) {
         super(context, resource, objects);
         mInflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         mLayoutResource = resource;
@@ -73,7 +84,14 @@ public class MainfeedListAdapter extends ArrayAdapter<Photo> {
         CircleImageView mprofileImage;
         String likesString;
         TextView username, timeDetla, caption, likes, comments;
-        SquareImageView image;
+        //SquareImageView video;
+
+        SimpleExoPlayerView videoPlayerView;
+        SimpleExoPlayer player;
+        boolean playWhenReady;
+        int currentWindow;
+        long playbackPosition;
+
         ImageView heartRed, heartWhite, comment;
 
         UserAccountSettings settings = new UserAccountSettings();
@@ -83,7 +101,7 @@ public class MainfeedListAdapter extends ArrayAdapter<Photo> {
         boolean likeByCurrentUser;
         Heart heart;
         GestureDetector detector;
-        Photo photo;
+        Video video;
     }
 
     @NonNull
@@ -97,7 +115,7 @@ public class MainfeedListAdapter extends ArrayAdapter<Photo> {
             holder = new ViewHolder();
 
             holder.username = (TextView) convertView.findViewById(R.id.username);
-            holder.image = (SquareImageView) convertView.findViewById(R.id.post_video);
+            holder.videoPlayerView = (SimpleExoPlayerView) convertView.findViewById(R.id.post_video);
             holder.heartRed = (ImageView) convertView.findViewById(R.id.image_heart_red);
             holder.heartWhite = (ImageView) convertView.findViewById(R.id.image_heart);
             holder.comment = (ImageView) convertView.findViewById(R.id.speech_bubble);
@@ -107,9 +125,13 @@ public class MainfeedListAdapter extends ArrayAdapter<Photo> {
             holder.timeDetla = (TextView) convertView.findViewById(R.id.image_time_posted);
             holder.mprofileImage = (CircleImageView) convertView.findViewById(R.id.profile_photo);
             holder.heart = new Heart(holder.heartWhite, holder.heartRed);
-            holder.photo = getItem(position);
+            holder.video = getItem(position);
             holder.detector = new GestureDetector(mContext, new GestureListener(holder));
             holder.users = new StringBuilder();
+
+            holder.player = ExoPlayerFactory.newSimpleInstance(
+                    new DefaultRenderersFactory(mContext),
+                    new DefaultTrackSelector(), new DefaultLoadControl());
 
             convertView.setTag(holder);
 
@@ -132,7 +154,7 @@ public class MainfeedListAdapter extends ArrayAdapter<Photo> {
         holder.comments.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Log.d(TAG, "onClick: loading comment thread for " + getItem(position).getPhoto_id());
+                Log.d(TAG, "onClick: loading comment thread for " + getItem(position).getVideo_id());
                 ((HomeActivity)mContext).onCommentThreadSelected(getItem(position),
                         mContext.getString(R.string.home_activity));
 
@@ -150,9 +172,23 @@ public class MainfeedListAdapter extends ArrayAdapter<Photo> {
             holder.timeDetla.setText("TODAY");
         }
 
+        /**TODO: This the place where the google api for streaming is used**/
+        /*holder.player = ExoPlayerFactory.newSimpleInstance(
+                new DefaultRenderersFactory(mContext),
+                new DefaultTrackSelector(), new DefaultLoadControl());*/
+
+        holder.videoPlayerView.setPlayer(holder.player);
+
+        holder.player.setPlayWhenReady(holder.playWhenReady);
+        holder.player.seekTo(holder.currentWindow, holder.playbackPosition);
+
+        Uri uri = Uri.parse(holder.video.getVideo_path());
+        MediaSource mediaSource = buildMediaSource(uri);
+        holder.player.prepare(mediaSource, true, false);
+
         //set the profile video
         final ImageLoader imageLoader = ImageLoader.getInstance();
-        imageLoader.displayImage(getItem(position).getImage_path(), holder.image);
+        //imageLoader.displayImage(getItem(position).getVideo_path(), holder.video);
 
 
         //get the profile video and username
@@ -255,6 +291,14 @@ public class MainfeedListAdapter extends ArrayAdapter<Photo> {
         return convertView;
     }
 
+
+
+    private MediaSource buildMediaSource(Uri uri) {
+        return new ExtractorMediaSource(uri,
+                new DefaultHttpDataSourceFactory("ua"),
+                new DefaultExtractorsFactory(), null, null);
+    }
+
     private boolean reachedEndOfList(int position){
         return position == getCount() - 1;
     }
@@ -287,13 +331,14 @@ public class MainfeedListAdapter extends ArrayAdapter<Photo> {
         }
 
         @Override
-        public boolean onDoubleTap(MotionEvent e) {
-            Log.d(TAG, "onDoubleTap: double tap detected.");
+        public boolean onSingleTapConfirmed(MotionEvent e) {
+
+            Log.d(TAG, "onSingleTap: single tap detected.");
 
             DatabaseReference reference = FirebaseDatabase.getInstance().getReference();
             Query query = reference
-                    .child(mContext.getString(R.string.dbname_photos))
-                    .child(mHolder.photo.getPhoto_id())
+                    .child(mContext.getString(R.string.dbname_videos))
+                    .child(mHolder.video.getVideo_id())
                     .child(mContext.getString(R.string.field_likes));
             query.addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
@@ -307,15 +352,74 @@ public class MainfeedListAdapter extends ArrayAdapter<Photo> {
                                 singleSnapshot.getValue(Like.class).getUser_id()
                                         .equals(FirebaseAuth.getInstance().getCurrentUser().getUid())){
 
-                            mReference.child(mContext.getString(R.string.dbname_photos))
-                                    .child(mHolder.photo.getPhoto_id())
+                            mReference.child(mContext.getString(R.string.dbname_videos))
+                                    .child(mHolder.video.getVideo_id())
                                     .child(mContext.getString(R.string.field_likes))
                                     .child(keyID)
                                     .removeValue();
 ///
-                            mReference.child(mContext.getString(R.string.dbname_user_photos))
+                            mReference.child(mContext.getString(R.string.dbname_user_videos))
                                     .child(FirebaseAuth.getInstance().getCurrentUser().getUid())
-                                    .child(mHolder.photo.getPhoto_id())
+                                    .child(mHolder.video.getVideo_id())
+                                    .child(mContext.getString(R.string.field_likes))
+                                    .child(keyID)
+                                    .removeValue();
+
+                            mHolder.heart.toggleLike();
+                            getLikesString(mHolder);
+                        }
+                        //case2: The user has not liked the video
+                        else if(!mHolder.likeByCurrentUser){
+                            //add new like
+                            addNewLike(mHolder);
+                            break;
+                        }
+                    }
+                    if(!dataSnapshot.exists()){
+                        //add new like
+                        addNewLike(mHolder);
+                    }
+                }
+
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
+
+                }
+            });
+
+            return true;
+        }
+
+        @Override
+        public boolean onDoubleTap(MotionEvent e) {
+            Log.d(TAG, "onDoubleTap: double tap detected.");
+
+            DatabaseReference reference = FirebaseDatabase.getInstance().getReference();
+            Query query = reference
+                    .child(mContext.getString(R.string.dbname_videos))
+                    .child(mHolder.video.getVideo_id())
+                    .child(mContext.getString(R.string.field_likes));
+            query.addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    for(DataSnapshot singleSnapshot : dataSnapshot.getChildren()){
+
+                        String keyID = singleSnapshot.getKey();
+
+                        //case1: Then user already liked the video
+                        if(mHolder.likeByCurrentUser &&
+                                singleSnapshot.getValue(Like.class).getUser_id()
+                                        .equals(FirebaseAuth.getInstance().getCurrentUser().getUid())){
+
+                            mReference.child(mContext.getString(R.string.dbname_videos))
+                                    .child(mHolder.video.getVideo_id())
+                                    .child(mContext.getString(R.string.field_likes))
+                                    .child(keyID)
+                                    .removeValue();
+///
+                            mReference.child(mContext.getString(R.string.dbname_user_videos))
+                                    .child(FirebaseAuth.getInstance().getCurrentUser().getUid())
+                                    .child(mHolder.video.getVideo_id())
                                     .child(mContext.getString(R.string.field_likes))
                                     .child(keyID)
                                     .removeValue();
@@ -353,15 +457,15 @@ public class MainfeedListAdapter extends ArrayAdapter<Photo> {
         Like like = new Like();
         like.setUser_id(FirebaseAuth.getInstance().getCurrentUser().getUid());
 
-        mReference.child(mContext.getString(R.string.dbname_photos))
-                .child(holder.photo.getPhoto_id())
+        mReference.child(mContext.getString(R.string.dbname_videos))
+                .child(holder.video.getVideo_id())
                 .child(mContext.getString(R.string.field_likes))
                 .child(newLikeID)
                 .setValue(like);
 
         mReference.child(mContext.getString(R.string.dbname_user_photos))
-                .child(holder.photo.getUser_id())
-                .child(holder.photo.getPhoto_id())
+                .child(holder.video.getUser_id())
+                .child(holder.video.getVideo_id())
                 .child(mContext.getString(R.string.field_likes))
                 .child(newLikeID)
                 .setValue(like);
@@ -400,7 +504,7 @@ public class MainfeedListAdapter extends ArrayAdapter<Photo> {
         DatabaseReference reference = FirebaseDatabase.getInstance().getReference();
         Query query = reference
                 .child(mContext.getString(R.string.dbname_photos))
-                .child(holder.photo.getPhoto_id())
+                .child(holder.video.getVideo_id())
                 .child(mContext.getString(R.string.field_likes));
         query.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
@@ -522,7 +626,7 @@ public class MainfeedListAdapter extends ArrayAdapter<Photo> {
      * Returns a string representing the number of days ago the post was made
      * @return
      */
-    private String getTimestampDifference(Photo photo){
+    private String getTimestampDifference(Video video){
         Log.d(TAG, "getTimestampDifference: getting timestamp difference.");
 
         String difference = "";
@@ -532,7 +636,7 @@ public class MainfeedListAdapter extends ArrayAdapter<Photo> {
         Date today = c.getTime();
         sdf.format(today);
         Date timestamp;
-        final String photoTimestamp = photo.getDate_created();
+        final String photoTimestamp = video.getDate_created();
         try{
             timestamp = sdf.parse(photoTimestamp);
             difference = String.valueOf(Math.round(((today.getTime() - timestamp.getTime()) / 1000 / 60 / 60 / 24 )));

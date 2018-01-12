@@ -17,6 +17,7 @@ import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.assist.FailReason;
@@ -38,6 +39,7 @@ public class GalleryFragment extends Fragment {
     private static final String TAG = "GalleryFragment";
 
 
+    View v;
     //constants
     private static final int NUM_GRID_COLUMNS = 3;
 
@@ -52,12 +54,13 @@ public class GalleryFragment extends Fragment {
     private ArrayList<String> directories;
     private String mAppend = "file:/";
     private String mSelectedImage;
-
+    private int checked = 0;
 
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_gallery, container, false);
+        v=view;
         galleryImage = (ImageView) view.findViewById(R.id.galleryImageView);
         gridView = (GridView) view.findViewById(R.id.gridView);
         directorySpinner = (Spinner) view.findViewById(R.id.spinnerDirectory);
@@ -111,24 +114,32 @@ public class GalleryFragment extends Fragment {
         }
     }
 
-    private void init(){
-        FilePaths filePaths = new FilePaths();
+    ArrayList<String> directoryNames = new ArrayList<>();
+    FilePaths filePaths = new FilePaths();
+    ArrayAdapter<String> adapter;
 
+    private void setUpDirectories(String dir){
+
+        directories.clear();
         //check for other folders indide "/storage/emulated/0/pictures"
-        if (FileSearch.getDirectoryPaths(filePaths.PICTURES) != null) {
-            directories = FileSearch.getDirectoryPaths(filePaths.PICTURES);
+        if (FileSearch.getDirectoryPaths(dir) != null) {
+            directories = FileSearch.getDirectoryPaths(dir);
+            //Toast.makeText(v.getContext(),directories.toString(),Toast.LENGTH_SHORT).show();
         }
-        directories.add(filePaths.CAMERA);
+        //directories.add(filePaths.CAMERA);
 
-        ArrayList<String> directoryNames = new ArrayList<>();
+        directoryNames.clear();
         for (int i = 0; i < directories.size(); i++) {
             Log.d(TAG, "init: directory: " + directories.get(i));
             int index = directories.get(i).lastIndexOf("/");
             String string = directories.get(i).substring(index);
             directoryNames.add(string);
         }
+    }
+    private void init(){
 
-        ArrayAdapter<String> adapter = new ArrayAdapter<String>(getActivity(),
+        setUpDirectories(filePaths.THE_DIR);
+        adapter = new ArrayAdapter<String>(getActivity(),
                 android.R.layout.simple_spinner_item, directoryNames);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         directorySpinner.setAdapter(adapter);
@@ -138,9 +149,17 @@ public class GalleryFragment extends Fragment {
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 Log.d(TAG, "onItemClick: selected: " + directories.get(position));
 
-                //setup our image grid for the directory chosen
-                setupGridView(directories.get(position));
+                if (++checked>1){
+                    //setup our image grid for the directory chosen
+                    if (!FileSearch.getImagePaths(directories.get(position)).isEmpty())
+                        setupGridView(directories.get(position));
+
+                    setUpDirectories(directories.get(position));
+                    //adapter.notifyDataSetChanged();
+                }
+
             }
+
 
             @Override
             public void onNothingSelected(AdapterView<?> parent) {

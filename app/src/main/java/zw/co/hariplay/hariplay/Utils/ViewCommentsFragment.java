@@ -187,7 +187,7 @@ public class ViewCommentsFragment extends Fragment {
     }
 
     /**
-     * retrieve the photo from the incoming bundle from profileActivity interface
+     * retrieve the video from the incoming bundle from profileActivity interface
      * @return
      */
     private String getCallingActivityFromBundle(){
@@ -202,7 +202,7 @@ public class ViewCommentsFragment extends Fragment {
     }
 
     /**
-     * retrieve the photo from the incoming bundle from profileActivity interface
+     * retrieve the video from the incoming bundle from profileActivity interface
      * @return
      */
     private Photo getPhotoFromBundle(){

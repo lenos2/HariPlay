@@ -6,9 +6,7 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentTransaction;
 import android.util.Log;
-import android.util.StringBuilderPrinter;
 import android.view.GestureDetector;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -21,7 +19,6 @@ import android.widget.TextView;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -47,6 +44,7 @@ import zw.co.hariplay.hariplay.models.Like;
 import zw.co.hariplay.hariplay.models.Photo;
 import zw.co.hariplay.hariplay.models.User;
 import zw.co.hariplay.hariplay.models.UserAccountSettings;
+import zw.co.hariplay.hariplay.models.Video;
 
 /**
  * Created by User on 8/12/2017.
@@ -84,6 +82,7 @@ public class ViewPostFragment extends Fragment {
 
     //vars
     private Photo mPhoto;
+    private Video mVideo;
     private int mActivityNumber = 0;
     private String photoUsername = "";
     private String profilePhotoUrl = "";
@@ -99,7 +98,8 @@ public class ViewPostFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_view_post, container, false);
-        mPostImage = (SquareImageView) view.findViewById(R.id.post_image);
+        mPostImage = (SquareImageView) view.findViewById(R.id.post_video);
+        //Add video player
         bottomNavigationView = (BottomNavigationViewEx) view.findViewById(R.id.bottomNavViewBar);
         mBackArrow = (ImageView) view.findViewById(R.id.backArrow);
         mBackLabel = (TextView) view.findViewById(R.id.tvBackLabel);
@@ -129,25 +129,25 @@ public class ViewPostFragment extends Fragment {
             //mPhoto = getPhotoFromBundle();
             UniversalImageLoader.setImage(getPhotoFromBundle().getImage_path(), mPostImage, null, "");
             mActivityNumber = getActivityNumFromBundle();
-            String photo_id = getPhotoFromBundle().getPhoto_id();
+            String video_id = getVideoFromBundle().getVideo_id();
 
             Query query = FirebaseDatabase.getInstance().getReference()
-                    .child(getString(R.string.dbname_photos))
-                    .orderByChild(getString(R.string.field_photo_id))
-                    .equalTo(photo_id);
+                    .child(getString(R.string.dbname_videos))
+                    .orderByChild(getString(R.string.field_video_id))
+                    .equalTo(video_id);
             query.addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
                     for ( DataSnapshot singleSnapshot :  dataSnapshot.getChildren()){
-                        Photo newPhoto = new Photo();
+                        Video newVideo = new Video();
                         Map<String, Object> objectMap = (HashMap<String, Object>) singleSnapshot.getValue();
 
-                        newPhoto.setCaption(objectMap.get(getString(R.string.field_caption)).toString());
-                        newPhoto.setTags(objectMap.get(getString(R.string.field_tags)).toString());
-                        newPhoto.setPhoto_id(objectMap.get(getString(R.string.field_photo_id)).toString());
-                        newPhoto.setUser_id(objectMap.get(getString(R.string.field_user_id)).toString());
-                        newPhoto.setDate_created(objectMap.get(getString(R.string.field_date_created)).toString());
-                        newPhoto.setImage_path(objectMap.get(getString(R.string.field_image_path)).toString());
+                        newVideo.setCaption(objectMap.get(getString(R.string.field_caption)).toString());
+                        newVideo.setTags(objectMap.get(getString(R.string.field_tags)).toString());
+                        newVideo.setVideo_id(objectMap.get(getString(R.string.field_video_id)).toString());
+                        newVideo.setUser_id(objectMap.get(getString(R.string.field_user_id)).toString());
+                        newVideo.setDate_created(objectMap.get(getString(R.string.field_date_created)).toString());
+                        newVideo.setVideo_path(objectMap.get(getString(R.string.field_video_path)).toString());
 
                         List<Comment> commentsList = new ArrayList<Comment>();
                         for (DataSnapshot dSnapshot : singleSnapshot
@@ -158,12 +158,12 @@ public class ViewPostFragment extends Fragment {
                             comment.setDate_created(dSnapshot.getValue(Comment.class).getDate_created());
                             commentsList.add(comment);
                         }
-                        newPhoto.setComments(commentsList);
+                        newVideo.setComments(commentsList);
 
-                        mPhoto = newPhoto;
+                        mVideo = newVideo;
 
                         getCurrentUser();
-                        getPhotoDetails();
+                        getVideoDetails();
                         //getLikesString();
 
                     }
@@ -332,7 +332,7 @@ public class ViewPostFragment extends Fragment {
 
                         String keyID = singleSnapshot.getKey();
 
-                        //case1: Then user already liked the photo
+                        //case1: Then user already liked the video
                         if(mLikedByCurrentUser &&
                                 singleSnapshot.getValue(Like.class).getUser_id()
                                 .equals(FirebaseAuth.getInstance().getCurrentUser().getUid())){
@@ -353,7 +353,7 @@ public class ViewPostFragment extends Fragment {
                             mHeart.toggleLike();
                             getLikesString();
                         }
-                        //case2: The user has not liked the photo
+                        //case2: The user has not liked the video
                         else if(!mLikedByCurrentUser){
                             //add new like
                             addNewLike();
@@ -400,13 +400,13 @@ public class ViewPostFragment extends Fragment {
         getLikesString();
     }
 
-    private void getPhotoDetails(){
-        Log.d(TAG, "getPhotoDetails: retrieving photo details.");
+    private void getVideoDetails(){
+        Log.d(TAG, "getVideoDetails: retrieving video details.");
         DatabaseReference reference = FirebaseDatabase.getInstance().getReference();
         Query query = reference
                 .child(getString(R.string.dbname_user_account_settings))
                 .orderByChild(getString(R.string.field_user_id))
-                .equalTo(mPhoto.getUser_id());
+                .equalTo(mVideo.getUser_id());
         query.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
@@ -435,10 +435,10 @@ public class ViewPostFragment extends Fragment {
         UniversalImageLoader.setImage(mUserAccountSettings.getProfile_photo(), mProfileImage, null, "");
         mUsername.setText(mUserAccountSettings.getUsername());
         mLikes.setText(mLikesString);
-        mCaption.setText(mPhoto.getCaption());
+        mCaption.setText(mVideo.getCaption());
 
         if(mPhoto.getComments().size() > 0){
-            mComments.setText("View all " + mPhoto.getComments().size() + " comments");
+            mComments.setText("View all " + mVideo.getComments().size() + " comments");
         }else{
             mComments.setText("");
         }
@@ -511,7 +511,7 @@ public class ViewPostFragment extends Fragment {
         Date today = c.getTime();
         sdf.format(today);
         Date timestamp;
-        final String photoTimestamp = mPhoto.getDate_created();
+        final String photoTimestamp = mVideo.getDate_created();
         try{
             timestamp = sdf.parse(photoTimestamp);
             difference = String.valueOf(Math.round(((today.getTime() - timestamp.getTime()) / 1000 / 60 / 60 / 24 )));
@@ -538,7 +538,7 @@ public class ViewPostFragment extends Fragment {
     }
 
     /**
-     * retrieve the photo from the incoming bundle from profileActivity interface
+     * retrieve the video from the incoming bundle from profileActivity interface
      * @return
      */
     private Photo getPhotoFromBundle(){
@@ -547,6 +547,16 @@ public class ViewPostFragment extends Fragment {
         Bundle bundle = this.getArguments();
         if(bundle != null) {
             return bundle.getParcelable(getString(R.string.photo));
+        }else{
+            return null;
+        }
+    }
+    private Video getVideoFromBundle(){
+        Log.d(TAG, "getPhotoFromBundle: arguments: " + getArguments());
+
+        Bundle bundle = this.getArguments();
+        if(bundle != null) {
+            return bundle.getParcelable(getString(R.string.video));
         }else{
             return null;
         }

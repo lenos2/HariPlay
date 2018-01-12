@@ -11,11 +11,12 @@ public class FilePaths {
 
     //"storage/emulated/0"
     public String ROOT_DIR = Environment.getExternalStorageDirectory().getPath();
-
+    public String THE_DIR = "/storage";
     public String VIDEOS = ROOT_DIR + "/Podcast";
     public String PICTURES = ROOT_DIR + "/Pictures";
     public String CAMERA = ROOT_DIR + "/DCIM/camera";
 
     public String FIREBASE_IMAGE_STORAGE = "photos/users/";
+    public String FIREBASE_VIDEO_STORAGE = "videos/users/";
 
 }

@@ -42,6 +42,7 @@ import zw.co.hariplay.hariplay.R;
 import zw.co.hariplay.hariplay.Utils.BottomNavigationViewHelper;
 import zw.co.hariplay.hariplay.Utils.FirebaseMethods;
 import zw.co.hariplay.hariplay.Utils.GridImageAdapter;
+import zw.co.hariplay.hariplay.Utils.GridVideoAdapter;
 import zw.co.hariplay.hariplay.Utils.UniversalImageLoader;
 import zw.co.hariplay.hariplay.models.Comment;
 import zw.co.hariplay.hariplay.models.Like;
@@ -49,6 +50,7 @@ import zw.co.hariplay.hariplay.models.Photo;
 import zw.co.hariplay.hariplay.models.User;
 import zw.co.hariplay.hariplay.models.UserAccountSettings;
 import zw.co.hariplay.hariplay.models.UserSettings;
+import zw.co.hariplay.hariplay.models.Video;
 
 /**
  * Created by User on 6/29/2017.
@@ -60,7 +62,7 @@ public class ProfileFragment extends Fragment {
 
 
     public interface OnGridImageSelectedListener{
-        void onGridImageSelected(Photo photo, int activityNumber);
+        void onGridImageSelected(Video video, int activityNumber);
     }
     OnGridImageSelectedListener mOnGridImageSelectedListener;
 
@@ -152,26 +154,26 @@ public class ProfileFragment extends Fragment {
     private void setupGridView(){
         Log.d(TAG, "setupGridView: Setting up image grid.");
 
-        final ArrayList<Photo> photos = new ArrayList<>();
+        final ArrayList<Video> videos = new ArrayList<>();
         DatabaseReference reference = FirebaseDatabase.getInstance().getReference();
         Query query = reference
-                .child(getString(R.string.dbname_user_photos))
+                .child(getString(R.string.dbname_user_videos))
                 .child(FirebaseAuth.getInstance().getCurrentUser().getUid());
         query.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 for ( DataSnapshot singleSnapshot :  dataSnapshot.getChildren()){
 
-                    Photo photo = new Photo();
+                    Video vidz = new Video();
                     Map<String, Object> objectMap = (HashMap<String, Object>) singleSnapshot.getValue();
 
                     try {
-                        photo.setCaption(objectMap.get(getString(R.string.field_caption)).toString());
-                        photo.setTags(objectMap.get(getString(R.string.field_tags)).toString());
-                        photo.setPhoto_id(objectMap.get(getString(R.string.field_photo_id)).toString());
-                        photo.setUser_id(objectMap.get(getString(R.string.field_user_id)).toString());
-                        photo.setDate_created(objectMap.get(getString(R.string.field_date_created)).toString());
-                        photo.setImage_path(objectMap.get(getString(R.string.field_image_path)).toString());
+                        vidz.setCaption(objectMap.get(getString(R.string.field_caption)).toString());
+                        vidz.setTags(objectMap.get(getString(R.string.field_tags)).toString());
+                        vidz.setVideo_id(objectMap.get(getString(R.string.field_video_id)).toString());
+                        vidz.setUser_id(objectMap.get(getString(R.string.field_user_id)).toString());
+                        vidz.setDate_created(objectMap.get(getString(R.string.field_date_created)).toString());
+                        vidz.setVideo_path(objectMap.get(getString(R.string.field_video_path)).toString());
 
                         ArrayList<Comment> comments = new ArrayList<Comment>();
                         for (DataSnapshot dSnapshot : singleSnapshot
@@ -183,7 +185,7 @@ public class ProfileFragment extends Fragment {
                             comments.add(comment);
                         }
 
-                        photo.setComments(comments);
+                        vidz.setComments(comments);
 
                         List<Like> likesList = new ArrayList<Like>();
                         for (DataSnapshot dSnapshot : singleSnapshot
@@ -192,8 +194,8 @@ public class ProfileFragment extends Fragment {
                             like.setUser_id(dSnapshot.getValue(Like.class).getUser_id());
                             likesList.add(like);
                         }
-                        photo.setLikes(likesList);
-                        photos.add(photo);
+                        vidz.setLikes(likesList);
+                        videos.add(vidz);
                     }catch(NullPointerException e){
                         Log.e(TAG, "onDataChange: NullPointerException: " + e.getMessage() );
                     }
@@ -205,17 +207,17 @@ public class ProfileFragment extends Fragment {
                 gridView.setColumnWidth(imageWidth);
 
                 ArrayList<String> imgUrls = new ArrayList<String>();
-                for(int i = 0; i < photos.size(); i++){
-                    imgUrls.add(photos.get(i).getImage_path());
+                for(int i = 0; i < videos.size(); i++){
+                    imgUrls.add(videos.get(i).getVideo_path());
                 }
-                GridImageAdapter adapter = new GridImageAdapter(getActivity(),R.layout.layout_grid_imageview,
+                GridVideoAdapter adapter = new GridVideoAdapter(getActivity(),R.layout.layout_grid_imageview,
                         "", imgUrls);
                 gridView.setAdapter(adapter);
 
                 gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                     @Override
                     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                        mOnGridImageSelectedListener.onGridImageSelected(photos.get(position), ACTIVITY_NUM);
+                        mOnGridImageSelectedListener.onGridImageSelected(videos.get(position), ACTIVITY_NUM);
                     }
                 });
             }
@@ -277,7 +279,7 @@ public class ProfileFragment extends Fragment {
         mPostsCount = 0;
 
         DatabaseReference reference = FirebaseDatabase.getInstance().getReference();
-        Query query = reference.child(getString(R.string.dbname_user_photos))
+        Query query = reference.child(getString(R.string.dbname_user_videos))
                 .child(FirebaseAuth.getInstance().getCurrentUser().getUid());
         query.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override

@@ -19,6 +19,7 @@ import zw.co.hariplay.hariplay.Utils.ViewPostFragment;
 import zw.co.hariplay.hariplay.Utils.ViewProfileFragment;
 import zw.co.hariplay.hariplay.models.Photo;
 import zw.co.hariplay.hariplay.models.User;
+import zw.co.hariplay.hariplay.models.Video;
 
 /**
  * Created by User on 5/28/2017.
@@ -47,12 +48,12 @@ public class ProfileActivity extends AppCompatActivity implements
     }
 
     @Override
-    public void onGridImageSelected(Photo photo, int activityNumber) {
-        Log.d(TAG, "onGridImageSelected: selected an image gridview: " + photo.toString());
+    public void onGridImageSelected(Video video, int activityNumber) {
+        Log.d(TAG, "onGridImageSelected: selected a video gridview: " + video.toString());
 
         ViewPostFragment fragment = new ViewPostFragment();
         Bundle args = new Bundle();
-        args.putParcelable(getString(R.string.photo), photo);
+        args.putParcelable(getString(R.string.video), video);
         args.putInt(getString(R.string.activity_number), activityNumber);
 
         fragment.setArguments(args);
